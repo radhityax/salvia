@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ title }}</title>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <main>
+            <h1>{{ title }}</h1>
+            {% if date %}<time>{{ date }}</time>{% endif %}
+            {{ content | safe}}
+        </main>
+    </body>
+</html>

@@ -5,4 +5,10 @@ edition = "2024"
 
 [dependencies]
 pulldown-cmark = "0.13.4"
+serde = {
+    version = "1.0.228",
+    features = ["derive"]
+}
+serde_yaml = "0.9.34"
+tera = "1.20.1"
 

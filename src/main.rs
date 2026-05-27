@@ -2,10 +2,26 @@ use std::env;
 use std::fs;
 
 use pulldown_cmark::{html, Parser};
+use serde::Deserialize;
+use tera::{Tera, Context};
 
 struct ParsedFile {
     front_matter: String,
     body: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct FrontMatter {
+    title: Option<String>,
+    date: Option<String>,
+    tags: Option<String>,
+    categories: Option<String>,
+}
+
+fn parse_front_matter(raw: &str) -> FrontMatter {
+    serde_yaml::from_str(raw)
+        .unwrap_or(FrontMatter {
+            title: None, date: None, tags: None, categories: None })
 }
 
 fn split_front_matter(raw: &str) -> ParsedFile {
@@ -64,14 +80,29 @@ fn main() {
     };
 
     let parsed = split_front_matter(&raw);
-
-    if parsed.front_matter.is_empty() {
-        println!("no front matter");
+    let fm: FrontMatter = if parsed.front_matter.is_empty() {
+        FrontMatter { title: None, date: None, tags: None, categories: None }
     } else {
-        println!("{}", parsed.front_matter
-        );
-    }
+        parse_front_matter(&parsed.front_matter)
+    };
 
-    let html = render_markdown(&parsed.body);
+    let content_html = render_markdown(&parsed.body);
+
+
+    let mut tera = Tera::default();
+    tera.add_raw_template("single.html", include_str!("../layouts/single.html"))
+        .expect("failed to load template");
+
+    let mut ctx = Context::new();
+    ctx.insert("content", &content_html);
+    ctx.insert("title", fm.title.as_deref().unwrap_or("untitled"));
+    ctx.insert("date", fm.date.as_deref().unwrap_or(""));
+    if let Some(ref title) = fm.title {
+        ctx.insert("title", title);
+    }
+    if let Some(ref date) = fm.date {
+        ctx.insert("date", date);
+    }
+    let html = tera.render("single.html", &ctx).expect("template render failed");
     println!("{}", html);
 }
