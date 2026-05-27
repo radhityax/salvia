@@ -1,9 +1,5 @@
-salvia
-======
+# salvia
 
-static site generator writen in C++
-
-why?
-====
+static site generator written in rust
 
 because i'm bored with hugo
